@@ -101,6 +101,12 @@ def callback_query(call):
         dialog_text += "Вес и объём - уточним позднее\n"
         dialog_text += f"Длительность аренды - мес."
 
+        markup = InlineKeyboardMarkup()
+        markup.row_width = 1
+        button1 = InlineKeyboardButton('Хорошо', callback_data='order_delivery_time')
+        markup.add(button1)
+        bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
+
     if call.data == "order_delivery_time":
 
         dialog_text = "Определите время"
@@ -108,6 +114,12 @@ def callback_query(call):
         dialog_text += "Текущие данные заказа:\n"
         dialog_text += "Вес и объём - уточним позднее\n"
         dialog_text += f"Длительность аренды - мес."
+
+        markup = InlineKeyboardMarkup()
+        markup.row_width = 1
+        button1 = InlineKeyboardButton('Хорошо', callback_data='order_delivery_yes')
+        markup.add(button1)
+        bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
 
 
 def main():
