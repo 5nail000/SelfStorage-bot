@@ -101,7 +101,7 @@ def callback_query(call):
         dialog_text += "Вес и объём - уточним позднее\n"
         dialog_text += f"Длительность аренды - мес."
 
-    if call.data == "order_delivery_no":
+    if call.data == "order_delivery_time":
 
         dialog_text = "Определите время"
         dialog_text += "\n\n"
