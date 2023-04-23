@@ -5,6 +5,7 @@ import logging
 import time
 import json
 import signal
+import pprint
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from environs import Env
@@ -18,6 +19,7 @@ env = Env()
 env.read_env(override=True)
 token = '5778281282:AAHAPOtzeP7_qofFxkkb0KxgSJzhMarWn-Y'
 bot = telebot.TeleBot(token)
+pp = pprint.PrettyPrinter(indent=4)
 
 
 def print_order_text(order: dict):
@@ -27,11 +29,13 @@ def print_order_text(order: dict):
     if order:
         for key, value in order.items():
             if key == 'duration':
-                text += f'Длительность аренды - {value}мес\n'
+                text += f'Длительность аренды - {value} мес\n'
             if key == 'measure_later':
                 text += "Вес и объём - уточним позднее\n"
             if key == 'delivery':
                 text += 'Доставка - нужна\n' if value else 'Доставка - самостоятельно\n'
+            if key == 'address':
+                text += f"Адрес от куда забрать: {value}\n"
             if key == 'begining_day':
                 text += f"Дата начала аренды: {value}\n"
             if key == 'delivery_hour':
@@ -53,23 +57,26 @@ def send_welcome(message):
 def callback_query(call):
 
     current_order = bot.__dict__['user_order'] if 'user_order' in bot.__dict__.keys() else None
+    wellcome_text = "Текст Wellcome-Page"
 
-    if call.data == "main_page":
-
-        if current_order:
-            dialog_text = "Ваш заказ принят. Скоро, с Вами свяжутся наши менеджеры"
+    if "main_page" in call.data:
+        is_confirmed = call.data
+        if is_confirmed.split("#")[-1] == 'confirmed':
+            dialog_text = "Ваш заказ принят.\nСкоро, с Вами свяжутся наши менеджеры"
             dialog_text += print_order_text(current_order)
             bot.send_message(call.message.chat.id, dialog_text)
+            bot.delete_message(call.message.chat.id, call.message.id)
+            call.message.id = bot.send_message(call.message.chat.id, wellcome_text).message_id
             bot.__dict__.pop('user_order')
+            time.sleep(1)
 
-        dialog_text = "Текст стартовой страницы"
         markup = InlineKeyboardMarkup()
         markup.row_width = 1
         button1 = InlineKeyboardButton('Арендовать место', callback_data='new_order')
         button2 = InlineKeyboardButton('Ознакомиться с подробностями', callback_data='show_info')
         button3 = InlineKeyboardButton('Мои Аренды', callback_data='show_orders')
         markup.add(button1, button2, button3)
-        bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
+        bot.edit_message_text(wellcome_text, call.message.chat.id, call.message.id, reply_markup=markup)
 
     if "new_order" in call.data:
 
@@ -133,6 +140,7 @@ def callback_query(call):
     if "order_delivery_address" in call.data:
 
         current_order.update({'delivery': True})
+        current_order.update({'last_message': call.message.id})
         bot.__dict__['user_order'] = current_order
 
         dialog_text = "Хорошо. Напишите в чат адрес, от куда надо будет забрать вещи."
@@ -143,12 +151,19 @@ def callback_query(call):
         button_pre = InlineKeyboardButton('<< Назад', callback_data='order_delivery_needs#')
         markup.add(button_pre)
         bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
+        bot.register_next_step_handler(call.message, ask_address)
 
     if "order_begining_month" in call.data:
 
-        if 'delivery' not in current_order.values():
+        if 'delivery' not in current_order.keys():
             current_order.update({'delivery': False})
-            bot.__dict__['user_order'] = current_order
+            current_order.pop('address')
+
+        if 'last_message' in current_order.keys():
+            bot.delete_message(call.message.chat.id, current_order['last_message'])
+            current_order.pop('last_message')
+
+        bot.__dict__['user_order'] = current_order
 
         dialog_text = "Определите месяц(начала аренды)"
         dialog_text += print_order_text(current_order)
@@ -220,12 +235,16 @@ def callback_query(call):
 
         dialog_text += print_order_text(current_order)
 
-        buttons = []
-        for hour in range(8, 22):
-            buttons.append(InlineKeyboardButton(f'{hour+1}:00', callback_data=f'order_resume#{hour+1}'))
+        buttons1 = [InlineKeyboardButton(f'{hour+1}:00', callback_data=f'order_resume#{hour+1}') for hour in range(7, 11)]
+        buttons2 = [InlineKeyboardButton(f'{hour+1}:00', callback_data=f'order_resume#{hour+1}') for hour in range(11, 15)]
+        buttons3 = [InlineKeyboardButton(f'{hour+1}:00', callback_data=f'order_resume#{hour+1}') for hour in range(15, 19)]
+        buttons4 = [InlineKeyboardButton(f'{hour+1}:00', callback_data=f'order_resume#{hour+1}') for hour in range(19, 23)]
 
         markup = InlineKeyboardMarkup()
-        markup.row(*buttons)
+        markup.row(*buttons1)
+        markup.row(*buttons2)
+        markup.row(*buttons3)
+        markup.row(*buttons4)
         markup.row(InlineKeyboardButton('<< Назад', callback_data='order_begining_day#'))
         bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
 
@@ -240,17 +259,23 @@ def callback_query(call):
         dialog_text += print_order_text(current_order)
 
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton('Да, всё верно', callback_data='main_page'))
+        markup.add(InlineKeyboardButton('Да, всё верно', callback_data='main_page#confirmed'))
         markup.add(InlineKeyboardButton('<< Назад', callback_data='order_delivery_time#'))
         bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
 
-    if "order_accepting" in call.data:
 
-        dialog_text = "Ваш заказ принят. Скоро, с Вами свяжутся наши менеджеры"
-        dialog_text += print_order_text(current_order)
-
-        bot.send_message(call.message.chat.id, dialog_text)
-        bot.edit_message_text(dialog_text, call.message.chat.id, call.message.id, reply_markup=markup)
+def ask_address(message):
+    if message.text:
+        current_order = bot.__dict__['user_order']
+        current_order.update({'delivery': True})
+        current_order.update({'address': message.text})
+        bot.__dict__['user_order'] = current_order
+        bot.send_message(
+            message.chat.id,
+            message.text,
+            # reply_to_message_id=message.message_id,
+            reply_markup=InlineKeyboardMarkup(keyboard=[[InlineKeyboardButton(text="Далее >>", callback_data="order_begining_month")]])
+            )
 
 
 def main():
