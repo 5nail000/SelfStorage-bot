@@ -18,7 +18,7 @@ logging.basicConfig(filename='bot.log', level=logging.INFO)
 
 env = Env()
 env.read_env(override=True)
-bot = telebot.TeleBot(env.str("5778281282:AAHAPOtzeP7_qofFxkkb0KxgSJzhMarWn-Y"))
+bot = telebot.TeleBot("5778281282:AAHAPOtzeP7_qofFxkkb0KxgSJzhMarWn-Y")
 
 
 def signal_handler(signum, frame):
