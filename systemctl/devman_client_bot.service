@@ -1,5 +1,5 @@
 [Unit]
-Description=Devman client_bot
+Description=devman_client_bot
 
 [Service]
 Type=simple
