@@ -1,23 +1,13 @@
 import sqlite3
 
 import datetime
-from datetime import date
 import sys
-import logging
 import time
-import json
 import signal
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from environs import Env
 
 
-
-logging.basicConfig(filename='bot.log', level=logging.INFO)
-
-
-env = Env()
-env.read_env(override=True)
 bot = telebot.TeleBot("5778281282:AAHAPOtzeP7_qofFxkkb0KxgSJzhMarWn-Y")
 
 
