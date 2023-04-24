@@ -1,12 +1,11 @@
 [Unit]
-Description=devman_client_bot
+Description=Devman Client Bot
 
 [Service]
 Type=simple
-User=root
-Group=root
-WorkingDirectory=/home/durgamail5000/storage_client_bot/
+WorkingDirectory=/home/durgamail5000/storage_client_bot
 ExecStart=/home/durgamail5000/storage_client_bot/venv/bin/python3.10 /home/durgamail5000/storage_client_bot/client_bot.py
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
