@@ -3,8 +3,8 @@ Description=Devman Client Bot
 
 [Service]
 Type=simple
-WorkingDirectory=/home/durgamail5000/storage_client_bot
-ExecStart=python3.10
+WorkingDirectory=/home/durgamail5000/storage_client_bot/
+ExecStart=sudo python3.10
 Restart=always
 
 [Install]
