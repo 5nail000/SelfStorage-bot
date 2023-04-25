@@ -23,15 +23,16 @@ def SQL_add_new_order(tg_id,
                       cost=None,
                       delivery=None,
                       delivery_time=None,
-                      address=None):
+                      address=None,
+                      phone=None):
 
     end_date = calculate_end_date(start_date, duration)
 
     conn = sqlite3.connect(BASE)
     cur = conn.cursor()
     exec_text = f"""
-        INSERT INTO 'orders' (user_id, start_date, end_date, weight, capacity, cost, delivery, delivery_time, address)
-        VALUES ('{tg_id}','{start_date}','{end_date}','{weight}','{capacity}','{cost}','{delivery}','{delivery_time}','{address}')
+        INSERT INTO 'orders' (user_id, start_date, end_date, weight, capacity, cost, delivery, delivery_time, address, phone)
+        VALUES ('{tg_id}','{start_date}','{end_date}','{weight}','{capacity}','{cost}','{delivery}','{delivery_time}','{address}','{phone}')
         """
     cur.execute(exec_text)
     conn.commit()

@@ -171,19 +171,6 @@ def callback_query(call):
             current_order.update({'weight': False})
             current_order.update({'capacity': False})
             current_order.update({'cost': False})
-
-            bot.__dict__['user_order'] = current_order
-
-        if 'last_message' in current_order.keys():
-            bot.delete_message(call.message.chat.id, current_order['last_message'])
-            del current_order['last_message']
-            bot.__dict__['user_order'] = current_order
-
-        if 'last_message_2' in current_order.keys():
-            bot.delete_message(call.message.chat.id, current_order['last_message_2'])
-            call.message.id = current_order['new_message']
-            del current_order['last_message_2']
-            del current_order['new_message']
             bot.__dict__['user_order'] = current_order
 
         dialog_text = "На сколько месяцев Вам требуется аренда?"
